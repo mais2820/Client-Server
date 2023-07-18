@@ -1,16 +1,33 @@
-﻿namespace API.Models
+﻿using API.Utilities.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace API.Models
+
 {
-    public class Booking
+    [Table("tb_tr_bookings")]
+    public class Booking : BaseEntity
     {
-        public Guid Guid { get; set; }
+        [Column("room_guid")]
         public Guid RoomGuid { get; set; }
+
+        [Column("employee_guid")]
         public Guid EmployeeGuid { get; set; }
+
+        [Column("start_date")]
         public DateTime StartDate { get; set;}
+
+        [Column("end_date")]
         public DateTime EndDate { get; set;}
-        public int Status { get; set;}
+
+        [Column("status")]
+        public StatusLevel Status { get; set;}
+
+        [Column("remarks")]
         public string Remarks { get; set;}
-        public DateTime CreatedDate { get; set;}
-        public DateTime ModifiedDate { get; set;}
+
+        // Cardinality
+        public Employee? Employee { get; set;}
+        public Room? Room { get; set;}
 
     }
 }
