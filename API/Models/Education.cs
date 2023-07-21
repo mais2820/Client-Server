@@ -5,9 +5,6 @@ namespace API.Models
     [Table("tb_m_educations")]
     public class Education : BaseEntity
     {
-        [Column("university_guid")]
-        public Guid UniversityGuid { get; set; }
-
         [Column("major", TypeName = "nvarchar(100)")]
         public string Major { get; set; }
 
@@ -16,6 +13,9 @@ namespace API.Models
         
         [Column("gpa")]
         public float Gpa { get; set; }
+
+        [Column("university_guid")]
+        public Guid UniversityGuid { get; set; }
 
         // Cardinality
         public University? University { get; set; }
