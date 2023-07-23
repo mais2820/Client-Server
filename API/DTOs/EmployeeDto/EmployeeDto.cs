@@ -1,0 +1,53 @@
+﻿using API.Models;
+using API.Utilities.Enums;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace API.DTOs.EmployeeDto
+{
+    public class EmployeeDto
+    {
+        public Guid Guid { get; set; }
+        public string NIK { get; set; }
+        public string FirstName { get; set; }
+        public string? LastName { get; set; }
+        public DateTime BirthDate { get; set; }
+        public GenderLevel Gender { get; set; }
+        public DateTime HiringDate { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+
+        public static implicit operator Employee(EmployeeDto employeeDto)
+        {
+            return new Employee
+            {
+                Guid = employeeDto.Guid,
+                NIK = employeeDto.NIK,
+                FirstName = employeeDto.FirstName,
+                LastName = employeeDto.LastName,
+                BirthDate = DateTime.Now,
+                Gender = employeeDto.Gender,
+                HiringDate = DateTime.Now,
+                Email = employeeDto.Email,
+                PhoneNumber = employeeDto.PhoneNumber,
+                ModifiedDate = DateTime.Now
+            };
+        }
+
+        public static explicit operator EmployeeDto(Employee employee)
+        {
+            return new EmployeeDto
+            {
+                Guid = employee.Guid,
+                NIK = employee.NIK,
+                FirstName = employee.FirstName,
+                LastName = employee.LastName,
+                BirthDate = DateTime.Now,
+                Gender = employee.Gender,
+                HiringDate = DateTime.Now,
+                Email = employee.Email,
+                PhoneNumber = employee.PhoneNumber
+            };
+        }
+    }
+}
