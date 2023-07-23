@@ -1,5 +1,5 @@
 ﻿using API.Contracts;
-using API.DTOs;
+using API.DTOs.UniversityDto;
 using API.Models;
 
 namespace API.Services
