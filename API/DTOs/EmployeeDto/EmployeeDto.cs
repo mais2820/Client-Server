@@ -25,9 +25,9 @@ namespace API.DTOs.EmployeeDto
                 NIK = employeeDto.NIK,
                 FirstName = employeeDto.FirstName,
                 LastName = employeeDto.LastName,
-                BirthDate = DateTime.Now,
+                BirthDate = employeeDto.BirthDate,
                 Gender = employeeDto.Gender,
-                HiringDate = DateTime.Now,
+                HiringDate = employeeDto.HiringDate,
                 Email = employeeDto.Email,
                 PhoneNumber = employeeDto.PhoneNumber,
                 ModifiedDate = DateTime.Now
@@ -42,9 +42,9 @@ namespace API.DTOs.EmployeeDto
                 NIK = employee.NIK,
                 FirstName = employee.FirstName,
                 LastName = employee.LastName,
-                BirthDate = DateTime.Now,
+                BirthDate = employee.BirthDate,
                 Gender = employee.Gender,
-                HiringDate = DateTime.Now,
+                HiringDate = employee.HiringDate,
                 Email = employee.Email,
                 PhoneNumber = employee.PhoneNumber
             };

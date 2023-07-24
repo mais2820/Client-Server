@@ -21,8 +21,8 @@ namespace API.DTOs.BookingDto
                 Guid = bookingDto.Guid,
                 RoomGuid = bookingDto.RoomGuid,
                 EmployeeGuid = bookingDto.EmployeeGuid,
-                StartDate = DateTime.Now,
-                EndDate = DateTime.Now,
+                StartDate = bookingDto.StartDate,
+                EndDate = bookingDto.EndDate,
                 Status = bookingDto.Status,
                 Remarks = bookingDto.Remarks,
                 ModifiedDate = DateTime.Now
@@ -36,6 +36,8 @@ namespace API.DTOs.BookingDto
                 Guid = booking.Guid,
                 RoomGuid = booking.RoomGuid,
                 EmployeeGuid = booking.EmployeeGuid,
+                StartDate= booking.StartDate,
+                EndDate= booking.EndDate,
                 Status = booking.Status,
                 Remarks = booking.Remarks
             };

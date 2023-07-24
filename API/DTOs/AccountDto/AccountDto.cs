@@ -31,7 +31,8 @@ namespace API.DTOs.AccountDto
                 Guid = account.Guid,
                 Password = account.Password,
                 Otp = account.Otp,
-                IsUsed = account.IsUsed
+                IsUsed = account.IsUsed,
+                ExpiredTime = DateTime.Now
             };
         }
     }
