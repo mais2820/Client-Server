@@ -19,7 +19,7 @@ namespace API.DTOs.AccountDto
                 Password = accountDto.Password,
                 Otp = accountDto.Otp,
                 IsUsed = accountDto.IsUsed,
-                ExpiredTime = DateTime.Now,
+                ExpiredTime = accountDto.ExpiredTime,
                 ModifiedDate = DateTime.Now
             };
         }
@@ -32,7 +32,7 @@ namespace API.DTOs.AccountDto
                 Password = account.Password,
                 Otp = account.Otp,
                 IsUsed = account.IsUsed,
-                ExpiredTime = DateTime.Now
+                ExpiredTime = account.ExpiredTime
             };
         }
     }

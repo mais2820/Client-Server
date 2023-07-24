@@ -18,7 +18,7 @@ namespace API.DTOs.AccountDto
                 Password = newAccountDto.Password,
                 Otp = newAccountDto.Otp,
                 IsUsed = newAccountDto.IsUsed,
-                ExpiredTime = DateTime.Now,
+                ExpiredTime = newAccountDto.ExpiredTime,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now
             };
