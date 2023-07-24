@@ -2,7 +2,10 @@ using API.Contracts;
 using API.Data;
 using API.Repositories;
 using API.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 using System.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +36,10 @@ builder.Services.AddScoped<EducationService>();
 builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<RoomService>();
+
+// Register Fluent Validation
+builder.Services.AddFluentValidationAutoValidation()
+                .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
