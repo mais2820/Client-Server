@@ -1,5 +1,6 @@
 ﻿using API.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace API.Data
 {
@@ -38,43 +39,50 @@ namespace API.Data
             modelBuilder.Entity<University>()
                 .HasMany(u => u.Educations)
                 .WithOne(e => e.University)
-                .HasForeignKey(e => e.UniversityGuid);
+                .HasForeignKey(e => e.UniversityGuid)
+                .OnDelete(DeleteBehavior.Restrict); // untuk memastikan data referensinya tidak bisa dihapus jika memiliki relasi FK
 
             // Room - Booking
             modelBuilder.Entity<Room>()
                 .HasMany(r => r.Bookings)
                 .WithOne(b => b.Room)
-                .HasForeignKey(b => b.RoomGuid);
+                .HasForeignKey(b => b.RoomGuid)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Booking - Employee
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.Employee)
                 .WithMany(e => e.Bookings)
-                .HasForeignKey(b => b.EmployeeGuid);
+                .HasForeignKey(b => b.EmployeeGuid)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Employee - Account
             modelBuilder.Entity<Employee>()
                 .HasOne(e => e.Account)
                 .WithOne(a => a.Employee)
-                .HasForeignKey<Account>(a => a.Guid);
+                .HasForeignKey<Account>(a => a.Guid)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Employee - Education
             modelBuilder.Entity<Employee>()
                 .HasOne(e => e.Education)
                 .WithOne(e => e.Employee)
-                .HasForeignKey<Education>(e => e.Guid);
+                .HasForeignKey<Education>(e => e.Guid)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Account - Account Roles
             modelBuilder.Entity<Account>()
                 .HasMany(a => a.AccountRoles)
                 .WithOne(a => a.Account)
-                .HasForeignKey(a => a.AccountGuid);
+                .HasForeignKey(a => a.AccountGuid)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Roles - Account Roles
             modelBuilder.Entity<Role>()
                .HasMany(r => r.AccountRoles)
                .WithOne(a => a.Role)
-               .HasForeignKey(a => a.RoleGuid);
+               .HasForeignKey(a => a.RoleGuid)
+               .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
