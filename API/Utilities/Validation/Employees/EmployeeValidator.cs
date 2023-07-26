@@ -27,14 +27,14 @@ namespace API.Utilities.Validation.Employees
                 .WithMessage("Email is required")
                 .EmailAddress()
                 .WithMessage("Email is not valid")
-                .Must(IsDuplicateValue);
+                .Must(IsDuplicateValue)
+                .WithMessage("Email already exist");
             RuleFor(e => e.PhoneNumber)
                 .NotEmpty()
                 .MaximumLength(20)
                 .Matches(@"^\+[0-9]")
                 .Must(IsDuplicateValue)
                 .WithMessage("Phone Number already exist");
-
         }
 
         private bool IsDuplicateValue(string arg)

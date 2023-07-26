@@ -27,7 +27,8 @@ namespace API.Utilities.Validation.Employees
                 .WithMessage("Email is required")
                 .EmailAddress()
                 .WithMessage("Email is not valid")
-                .Must(IsDuplicateValue);
+                .Must(IsDuplicateValue)
+                .WithMessage("Email already exist"); 
             RuleFor(e => e.PhoneNumber)
                 .NotEmpty()
                 .MaximumLength(20)
