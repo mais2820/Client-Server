@@ -1,16 +1,38 @@
 ﻿using API.Contracts;
 using API.DTOs.AccountDto;
 using API.Models;
+using API.Repositories;
 
 namespace API.Services
 {
     public class AccountService
     {
         private readonly IAccountRepository _accountRepository;
+        private readonly IEmployeeRepository _employeeRepository;
 
-        public AccountService(IAccountRepository accountRepository)
+        public AccountService(IAccountRepository accountRepository, IEmployeeRepository employeeRepository)
         {
             _accountRepository = accountRepository;
+            _employeeRepository = employeeRepository;
+        }
+
+        public int Login(LoginDto loginDto)
+        {
+            var getEmployee = _employeeRepository.GetByEmail(loginDto.Email);
+
+            if (getEmployee is null)
+            {
+                return 0; // Employee not found
+            }
+
+            var getAccount = _accountRepository.GetByGuid(getEmployee.Guid);
+
+            if (getAccount.Password == loginDto.Password)
+            {
+                return 1; // Login success
+            }
+
+            return 0;
         }
 
         public IEnumerable<AccountDto> GetAll()
@@ -80,6 +102,6 @@ namespace API.Services
 
             return result ? 1 // Account is deleted;
                 : 0; // Account failed to delete;
-        }
+        }       
     }
 }

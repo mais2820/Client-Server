@@ -21,5 +21,10 @@ namespace API.Repositories
             return _context.Set<Employee>().ToList().LastOrDefault()?.NIK;
         }
 
+        public Employee GetByEmail(string email)
+        {
+            return _context.Set<Employee>().SingleOrDefault(e => e.Email.Contains(email));
+        }
+
     }
 }
