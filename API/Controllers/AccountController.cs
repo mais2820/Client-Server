@@ -44,6 +44,29 @@ namespace API.Controllers
             });
         }
 
+        [HttpPost("register")]
+        public IActionResult Register(RegisterDto registerDto)
+        {
+            var result = _accountService.Register(registerDto);
+
+            if (result is null)
+            {
+                return NotFound(new ResponseHandler<LoginDto>
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Email or Password is incorrect"
+                });
+            }
+
+            return Ok(new ResponseHandler<LoginDto>
+            {
+                Code = StatusCodes.Status200OK,
+                Status = HttpStatusCode.OK.ToString(),
+                Message = "Register Success"
+            });
+        }
+
         [HttpGet]
         public IActionResult GetAll()
         {

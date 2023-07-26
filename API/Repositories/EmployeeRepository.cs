@@ -1,6 +1,8 @@
 ﻿using API.Contracts;
 using API.Data;
+using API.DTOs.AccountDto;
 using API.Models;
+using API.Utilities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
@@ -24,6 +26,11 @@ namespace API.Repositories
         public Employee GetByEmail(string email)
         {
             return _context.Set<Employee>().SingleOrDefault(e => e.Email.Contains(email));
+        }
+
+        public Guid GetLastEmployeeGuid()
+        {
+            return _context.Set<Employee>().ToList().LastOrDefault().Guid;
         }
 
     }

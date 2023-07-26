@@ -1,7 +1,11 @@
 ﻿using API.Contracts;
 using API.DTOs.AccountDto;
+using API.DTOs.EducationDto;
+using API.DTOs.EmployeeDto;
+using API.DTOs.UniversityDto;
 using API.Models;
 using API.Repositories;
+using API.Utilities.Handlers;
 
 namespace API.Services
 {
@@ -9,11 +13,15 @@ namespace API.Services
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly IEducationRepository _educationRepository;
+        private readonly IUniversityRepository _universityRepository;
 
-        public AccountService(IAccountRepository accountRepository, IEmployeeRepository employeeRepository)
+        public AccountService(IAccountRepository accountRepository, IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository)
         {
             _accountRepository = accountRepository;
             _employeeRepository = employeeRepository;
+            _educationRepository = educationRepository;
+            _universityRepository = universityRepository;
         }
 
         public int Login(LoginDto loginDto)
@@ -33,6 +41,55 @@ namespace API.Services
             }
 
             return 0;
+        }
+
+        public RegisterDto? Register(RegisterDto registerDto)
+        {
+            Employee employeeToCreate = new NewEmployeeDto
+            {
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                BirthDate = registerDto.BirthDate,
+                Gender = registerDto.Gender,
+                HiringDate = registerDto.HiringDate,
+                Email = registerDto.Email,
+                PhoneNumber = registerDto.PhoneNumber
+            };
+            employeeToCreate.NIK = GenerateHandler.Nik(_employeeRepository.GetLastNik());
+            var employeeResult = _employeeRepository.Create(employeeToCreate);
+
+            var universityResult = _universityRepository.Create(new NewUniversityDto
+            {
+                Code = registerDto.UnivCode,
+                Name = registerDto.UnivName
+            });
+
+            var educationResult = _educationRepository.Create(new NewEducationDto
+            {
+                Guid = _employeeRepository.GetLastEmployeeGuid(),
+                Degree = registerDto.Degree,
+                Major = registerDto.Major,
+                Gpa = registerDto.GPA,
+                UniversityGuid = _universityRepository.GetLastUniversityGuid()
+            });
+
+            var accountResult = _accountRepository.Create(new NewAccountDto
+            {
+                Guid = _employeeRepository.GetLastEmployeeGuid(),
+                IsUsed = true,
+                ExpiredTime = DateTime.Now.AddYears(3),
+                Otp = 111,
+                Password = registerDto.Password,
+            });
+
+            if (employeeResult is null || universityResult is null || educationResult is null || accountResult is null)
+            {
+                return null;
+            }
+
+            return (RegisterDto)registerDto;
+
+
         }
 
         public IEnumerable<AccountDto> GetAll()

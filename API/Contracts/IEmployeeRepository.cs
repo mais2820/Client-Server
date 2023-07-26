@@ -1,4 +1,5 @@
 ﻿using API.Models;
+using API.Utilities.Enums;
 
 namespace API.Contracts
 {
@@ -6,7 +7,7 @@ namespace API.Contracts
     {
         bool IsNotExist(string value);
         string GetLastNik();
-
         Employee? GetByEmail(string email);
+        Guid GetLastEmployeeGuid();
     } 
 }
