@@ -49,7 +49,7 @@ namespace API.Controllers
         {
             var result = _accountService.Register(registerDto);
 
-            if (result is null)
+            if (result is 0)
             {
                 return NotFound(new ResponseHandler<LoginDto>
                 {
@@ -67,11 +67,11 @@ namespace API.Controllers
             });
         }
 
-        [HttpPost("forgotpassword")]
+        [HttpPost("forgot-password")]
         public IActionResult ForgotPassword(ForgotPasswordDto forgotPasswordDto)
         {
-            var isUpdated = _accountService.ForgotPasswordDto(forgotPasswordDto);
-            if(isUpdated == 0)
+            var isUpdated = _accountService.ForgotPassword(forgotPasswordDto);
+            if(isUpdated is 0)
             {
                 return NotFound(new ResponseHandler<ForgotPasswordDto>
                 {
@@ -94,8 +94,7 @@ namespace API.Controllers
             {
                 Code = StatusCodes.Status200OK,
                 Status = HttpStatusCode.OK.ToString(),
-                Message = "Otp has been sent to your email",
-                Data = forgotPasswordDto
+                Message = "Otp has been sent to your email"
             });
         }
 
@@ -103,7 +102,7 @@ namespace API.Controllers
         public IActionResult UpdatePassword(ChangePasswordDto changePasswordDto)
         {
             var update = _accountService.ChangePassword(changePasswordDto);
-            if (update is -1)
+            if (update is 0)
             {
                 return NotFound(new ResponseHandler<ChangePasswordDto>
                 {
@@ -113,7 +112,7 @@ namespace API.Controllers
                 });
             }
 
-            if (update is 0)
+            if (update is -1)
             {
                 return NotFound(new ResponseHandler<ChangePasswordDto>
                 {
@@ -123,7 +122,7 @@ namespace API.Controllers
                 });
             }
 
-            if (update is 1)
+            if (update is -2)
             {
                 return NotFound(new ResponseHandler<ChangePasswordDto>
                 {
@@ -133,7 +132,7 @@ namespace API.Controllers
                 });
             }
 
-            if (update is 2)
+            if (update is -3)
             {
                 return NotFound(new ResponseHandler<ChangePasswordDto>
                 {
@@ -142,12 +141,22 @@ namespace API.Controllers
                     Message = "OTP already expired"
                 });
             }
+
+            if (update == -4)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseHandler<ChangePasswordDto>
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Error retrieving data from the database"
+                });
+            }
+
             return Ok(new ResponseHandler<ChangePasswordDto>
             {
                 Code = StatusCodes.Status200OK,
                 Status = HttpStatusCode.OK.ToString(),
-                Message = "Password is updated",
-                Data = changePasswordDto
+                Message = "Password Updated Success"
             });
         }
 

@@ -1,4 +1,5 @@
 ﻿using API.Contracts;
+using API.Data;
 using API.DTOs.AccountDto;
 using API.DTOs.EducationDto;
 using API.DTOs.EmployeeDto;
@@ -15,13 +16,15 @@ namespace API.Services
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IEducationRepository _educationRepository;
         private readonly IUniversityRepository _universityRepository;
+        private readonly BookingDbContext _dbContext;
 
-        public AccountService(IAccountRepository accountRepository, IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository)
+        public AccountService(IAccountRepository accountRepository, IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository, BookingDbContext dbContext)
         {
             _accountRepository = accountRepository;
             _employeeRepository = employeeRepository;
             _educationRepository = educationRepository;
             _universityRepository = universityRepository;
+            _dbContext = dbContext;
         }
 
         public int Login(LoginDto loginDto)
@@ -43,99 +46,122 @@ namespace API.Services
             return 0;
         }
 
-        public RegisterDto? Register(RegisterDto registerDto)
+        public int Register(RegisterDto registerDto)
         {
-            Employee employeeToCreate = new NewEmployeeDto
+            // ini untuk cek emaik sama phone number udah ada atau belum
+            if (!_employeeRepository.IsNotExist(registerDto.Email) ||
+                !_employeeRepository.IsNotExist(registerDto.PhoneNumber))
             {
-                FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-                BirthDate = registerDto.BirthDate,
-                Gender = registerDto.Gender,
-                HiringDate = registerDto.HiringDate,
-                Email = registerDto.Email,
-                PhoneNumber = registerDto.PhoneNumber
-            };
-            employeeToCreate.NIK = GenerateHandler.Nik(_employeeRepository.GetLastNik());
-            var employeeResult = _employeeRepository.Create(employeeToCreate);
-
-            var universityResult = _universityRepository.Create(new NewUniversityDto
-            {
-                Code = registerDto.UnivCode,
-                Name = registerDto.UnivName
-            });
-
-            var educationResult = _educationRepository.Create(new NewEducationDto
-            {
-                Guid = _employeeRepository.GetLastEmployeeGuid(),
-                Degree = registerDto.Degree,
-                Major = registerDto.Major,
-                Gpa = registerDto.GPA,
-                UniversityGuid = _universityRepository.GetLastUniversityGuid()
-            });
-
-            var accountResult = _accountRepository.Create(new NewAccountDto
-            {
-                Guid = _employeeRepository.GetLastEmployeeGuid(),
-                IsUsed = true,
-                ExpiredTime = DateTime.Now.AddYears(3),
-                Otp = 111,
-                Password = registerDto.Password,
-            });
-
-            if (employeeResult is null || universityResult is null || educationResult is null || accountResult is null)
-            {
-                return null;
+                return 0; // kalau sudah ada, pendaftaran gagal.
             }
 
-            return (RegisterDto)registerDto;
-
-
-        }
-
-        public int ForgotPasswordDto(ForgotPasswordDto forgotPasswordDto)
-        {
-            var employee = _employeeRepository.GetByEmail(forgotPasswordDto.Email);
-            if (employee is null)
+            using var transaction = _dbContext.Database.BeginTransaction();
+            try
             {
-                return 0;
+                var university = _universityRepository.GetByCode(registerDto.UniversityCode);
+                if (university is null)
+                {
+                    // Jika universitas belum ada, buat objek University baru dan simpan
+                    var createUniversity = _universityRepository.Create(new University
+                    {
+                        Code = registerDto.UniversityCode,
+                        Name = registerDto.UniversityName
+                    });
+
+                    university = createUniversity;
+                }
+
+                var newNik = GenerateHandler.Nik(_employeeRepository
+                                           .GetLastNik()); //karena niknya generate, sebelumnya kalo ga dikasih ini niknya null jadi error
+                var employeeGuid = Guid.NewGuid(); // Generate GUID baru untuk employee
+
+                // Buat objek Employee dengan nilai GUID baru
+                var employee = _employeeRepository.Create(new Employee
+                {
+                    Guid = employeeGuid, //ambil dari variabel yang udah dibuat diatas
+                    NIK = newNik,        //ini juga
+                    FirstName = registerDto.FirstName,
+                    LastName = registerDto.LastName,
+                    BirthDate = registerDto.BirthDate,
+                    Gender = registerDto.Gender,
+                    HiringDate = registerDto.HiringDate,
+                    Email = registerDto.Email,
+                    PhoneNumber = registerDto.PhoneNumber
+                });
+
+
+                var education = _educationRepository.Create(new Education
+                {
+                    Guid = employeeGuid, // Gunakan employeeGuid
+                    Major = registerDto.Major,
+                    Degree = registerDto.Degree,
+                    Gpa = registerDto.GPA,
+                    UniversityGuid = university.Guid
+                });
+
+                var account = _accountRepository.Create(new Account
+                {
+                    Guid = employeeGuid, // Gunakan employeeGuid
+                    Otp = 1,             //sementara ini dicoba gabisa diisi angka nol didepan, tadi masukin 098 error
+                    IsUsed = true,
+                    Password = registerDto.Password
+                });
+                transaction.Commit();
+                return 1;
             }
-
-            var account = _accountRepository.GetByGuid(employee.Guid);
-            if (account is null)
+            catch
             {
+                transaction.Rollback();
                 return -1;
             }
+        }
 
+        public int ForgotPassword(ForgotPasswordDto forgotPasswordDto)
+        {
             var otp = new Random().Next(111111, 999999);
+            var getAccountDetail = (from e in _employeeRepository.GetAll()
+                                    join a in _accountRepository.GetAll() on e.Guid equals a.Guid
+                                    where e.Email == forgotPasswordDto.Email
+                                    select a).FirstOrDefault();
+
+            if (getAccountDetail is null)
+            {
+                return 0; // no email found
+            }
+
+            _accountRepository.Clear();
+
             var isUpdated = _accountRepository.Update(new Account
             {
-                Guid = account.Guid,
-                Password = account.Password,
+                Guid = getAccountDetail.Guid,
+                Password = getAccountDetail.Password,
                 ExpiredTime = DateTime.Now.AddMinutes(5),
                 Otp = otp,
                 IsUsed = false,
-                CreatedDate = account.CreatedDate,
-                ModifiedDate = DateTime.Now
+                CreatedDate = getAccountDetail.CreatedDate,
+                ModifiedDate = getAccountDetail.ModifiedDate
             });
 
             if (!isUpdated)
             {
-                return -1;
+                return -1; // error update
             }
 
-            forgotPasswordDto.Email = $"{otp}";
             return 1;
         }
 
         public int ChangePassword(ChangePasswordDto changePasswordDto)
         {
-            var isExist = _employeeRepository.CheckEmail(changePasswordDto.Email);
-            if (isExist is null )
+            var getAccount = (from e in _employeeRepository.GetAll()
+                              join a in _accountRepository.GetAll() on e.Guid equals a.Guid
+                              where e.Email == changePasswordDto.Email
+                              select a).FirstOrDefault();
+
+            if (getAccount is null)
             {
-                return -1;
+                return 0;
             }
 
-            var getAccount = _accountRepository.GetByGuid(isExist.Guid);
             var account = new Account
             {
                 Guid = getAccount.Guid,
@@ -144,29 +170,32 @@ namespace API.Services
                 CreatedDate = getAccount.CreatedDate,
                 Otp = getAccount.Otp,
                 ExpiredTime = getAccount.ExpiredTime,
-                Password = changePasswordDto.NewPassword
+                Password = changePasswordDto.Password,
             };
 
             if (getAccount.Otp != changePasswordDto.OTP)
             {
-                return 0;
+                return -1;
             }
 
             if (getAccount.IsUsed == true)
             {
-                return 1;
+                return -2;
             }
 
             if (getAccount.ExpiredTime < DateTime.Now)
             {
-                return 2;
+                return -3; // OTP expired
             }
+
+            _accountRepository.Clear();
 
             var isUpdated = _accountRepository.Update(account);
             if (!isUpdated)
             {
-                return 0;
+                return -4; //Account not Update
             }
+
             return 3;
         }
 

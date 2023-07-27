@@ -14,6 +14,7 @@ namespace API.Utilities.Validation.Accounts
 
             RuleFor(e => e.Email)
                 .NotEmpty()
+                .EmailAddress()
                 .WithMessage("Email is required");
             RuleFor(Accounts => Accounts.OTP)
                 .NotEmpty()

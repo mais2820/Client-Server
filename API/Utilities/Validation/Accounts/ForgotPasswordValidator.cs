@@ -13,6 +13,7 @@ namespace API.Utilities.Validation.Accounts
             _employeeRepository = employeeRepository;
 
             RuleFor(e => e.Email)
+                .EmailAddress()
                 .NotEmpty()
                 .WithMessage("Email is required");
         }
