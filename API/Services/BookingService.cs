@@ -89,7 +89,7 @@ namespace API.Services
                 : 0; // Booking failed to delete;
         }
 
-        public IEnumerable<RoomDto> FreeRoomToday()
+        public IEnumerable<RoomDto> FreeRoomsToday()
         {
             List<RoomDto> roomDtos = new List<RoomDto>();
             var bookings = GetAll();
@@ -163,7 +163,7 @@ namespace API.Services
             return listBookingLength;
         }
 
-        public IEnumerable<DetailBookingDto> getDetailAll()
+        public IEnumerable<DetailBookingDto> GetAllDetailBooking()
         {
             var resultBooking = _bookingRepository.GetAll();
             if (!resultBooking.Any())
@@ -203,7 +203,7 @@ namespace API.Services
             return detailDtos;
         }
 
-        public DetailBookingDto? getDetailByGuid(Guid guid)
+        public DetailBookingDto? GetDetailBookingByGuid(Guid guid)
         {
             var resultBooking = _bookingRepository.GetByGuid(guid);
             if (resultBooking is null)
