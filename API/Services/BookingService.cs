@@ -11,11 +11,13 @@ namespace API.Services
     {
         private readonly IBookingRepository _bookingRepository;
         private readonly IRoomRepository _roomRepository;
+        private readonly IEmployeeRepository _employeeRepository;
 
-        public BookingService(IBookingRepository bookingRepository, IRoomRepository roomRepository)
+        public BookingService(IBookingRepository bookingRepository, IRoomRepository roomRepository, IEmployeeRepository employeeRepository)
         {
             _bookingRepository = bookingRepository;
             _roomRepository = roomRepository;
+            _employeeRepository = employeeRepository;
         }
 
         public IEnumerable<BookingDto> GetAll()
@@ -128,18 +130,18 @@ namespace API.Services
 
                 while (currentDate <= endDate)
                 {
-                    // Memeriksa apakah hari saat ini adalah Sabtu atau Minggu 
+                    // Memeriksa apakah hari saat ini adalah Sabtu atau Minggu
                     if (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
                     {
-                        // Hari kerja, menghitung waktu kerja dengan memperhitungkan jam 
-                        DateTime openRoom = currentDate.Date.AddHours(9); // Misalnya, waktu kerja dimulai pada pukul 09:00 
-                        DateTime closeRoom = currentDate.Date.AddHours(17).AddMinutes(30); // Misalnya, waktu kerja selesai pada pukul 17:30 
+                        // Hari kerja, menghitung waktu kerja dengan memperhitungkan jam
+                        DateTime openRoom = currentDate.Date.AddHours(9); // Misalnya, waktu kerja dimulai pada pukul 09:00
+                        DateTime closeRoom = currentDate.Date.AddHours(17).AddMinutes(30); // Misalnya, waktu kerja selesai pada pukul 17:30
 
                         TimeSpan dayTime = closeRoom - openRoom;
                         timeSpan += dayTime;
                     }
 
-                    currentDate = currentDate.AddDays(1); // Pindah ke hari berikutnya 
+                    currentDate = currentDate.AddDays(1); // Pindah ke hari berikutnya
                 }
 
                 var room = _roomRepository.GetByGuid(booking.RoomGuid);
@@ -159,6 +161,81 @@ namespace API.Services
             }
 
             return listBookingLength;
+        }
+
+        public IEnumerable<DetailBookingDto> getDetailAll()
+        {
+            var resultBooking = _bookingRepository.GetAll();
+            if (!resultBooking.Any())
+            {
+                return Enumerable.Empty<DetailBookingDto>();
+            }
+
+            var detailDtos = new List<DetailBookingDto>();
+            foreach (var result in resultBooking)
+            {
+                var resultEmployee = _employeeRepository.GetByGuid(result.EmployeeGuid);
+                if (resultEmployee is null)
+                {
+                    return Enumerable.Empty<DetailBookingDto>();
+                }
+
+                var resultRoom = _roomRepository.GetByGuid(result.RoomGuid);
+                if (resultRoom is null)
+                {
+                    return Enumerable.Empty<DetailBookingDto>();
+                }
+
+                var toDto = new DetailBookingDto()
+                {
+                    BookingGuid = result.Guid,
+                    BookedNik = resultEmployee.NIK,
+                    BookedBy = resultEmployee.FirstName + " " + resultEmployee.LastName,
+                    RoomName = resultRoom.Name,
+                    StartDate = result.StartDate,
+                    EndDate = result.EndDate,
+                    Status = result.Status,
+                    Remarks = result.Remarks
+                };
+                detailDtos.Add(toDto);
+            }
+
+            return detailDtos;
+        }
+
+        public DetailBookingDto? getDetailByGuid(Guid guid)
+        {
+            var resultBooking = _bookingRepository.GetByGuid(guid);
+            if (resultBooking is null)
+            {
+                return null;
+            }
+
+            var resultEmployee = _employeeRepository.GetByGuid(resultBooking.EmployeeGuid);
+            if (resultEmployee is null)
+            {
+                return null;
+            }
+
+            var resultRoom = _roomRepository.GetByGuid(resultBooking.RoomGuid);
+            if (resultRoom is null)
+            {
+                return null;
+            }
+
+            var toDto = new DetailBookingDto()
+            {
+                BookingGuid = resultBooking.Guid,
+                BookedNik = resultEmployee.NIK,
+                BookedBy = resultEmployee.FirstName + " " + resultEmployee.LastName,
+                RoomName = resultRoom.Name,
+                StartDate = resultBooking.StartDate,
+                EndDate = resultBooking.EndDate,
+                Status = resultBooking.Status,
+                Remarks = resultBooking.Remarks
+            };
+
+            return toDto;
         }
     }
 }

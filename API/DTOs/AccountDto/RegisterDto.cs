@@ -14,8 +14,8 @@ namespace API.DTOs.AccountDto
         public string Major { get; set; }
         public string Degree { get; set; }
         public float GPA { get; set; }
-        public string UnivCode { get; set; }
-        public string UnivName { get; set; }
+        public string UniversityCode { get; set; }
+        public string UniversityName { get; set; }
         public string Password { get; set; }
 
     }

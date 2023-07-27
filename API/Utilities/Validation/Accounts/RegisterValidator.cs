@@ -33,10 +33,12 @@ namespace API.Utilities.Validation.Accounts
             RuleFor(l => l.Degree)
                 .NotEmpty();
             RuleFor(l => l.GPA)
+                .LessThanOrEqualTo(0)
+                .GreaterThanOrEqualTo(4)
                 .NotEmpty();
-            RuleFor(l => l.UnivCode)
-                .NotEmpty();
-            RuleFor(l => l.UnivName)
+            RuleFor(l => l.UniversityCode)
+                .NotEmpty(); 
+            RuleFor(l => l.UniversityName)
                 .NotEmpty();
             RuleFor(l => l.Password)
                 .NotEmpty()
