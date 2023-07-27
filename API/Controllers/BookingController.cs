@@ -1,5 +1,6 @@
 ﻿using API.Contracts;
 using API.DTOs.BookingDto;
+using API.DTOs.RoomDto;
 using API.DTOs.UniversityDto;
 using API.Models;
 using API.Services;
@@ -152,6 +153,53 @@ namespace API.Controllers
                 Code = StatusCodes.Status200OK,
                 Status = HttpStatusCode.OK.ToString(),
                 Message = "Delete Data Success"
+            });
+        }
+
+        [HttpGet("FreeRoomsToday")]
+        public IActionResult FreeRoomsToday()
+        {
+            var result = _bookingService.FreeRoomToday();
+            if (result is null)
+            {
+                return NotFound(new ResponseHandler<RoomDto>
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Room not found"
+                });
+            }
+
+            return Ok(new ResponseHandler<IEnumerable<RoomDto>>
+            {
+                Code = StatusCodes.Status200OK,
+                Status = HttpStatusCode.OK.ToString(),
+                Message = "Success retrieving data",
+                Data = result
+            });
+        }
+
+        [HttpGet("BookingLength")]
+        public IActionResult BookingLength()
+        {
+            var result = _bookingService.BookingLength();
+            if (!result.Any())
+            {
+                return NotFound(new ResponseHandler<BookingLengthDto>
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Room not found"
+                });
+            }
+
+            return Ok(
+            new ResponseHandler<IEnumerable<BookingLengthDto>>
+            {
+                Code = StatusCodes.Status200OK,
+                Status = HttpStatusCode.OK.ToString(),
+                Message = "Success retrieving data",
+                Data = result
             });
         }
     }
