@@ -155,7 +155,7 @@ namespace API.Controllers
             });
         }
 
-        [HttpGet("employees-detail")]
+        [HttpGet("detail")]
         public IActionResult GetAllEmployeeDetail()
         {
             var result = _employeeService.GetAllEmployeeDetail();
@@ -177,7 +177,7 @@ namespace API.Controllers
             });
         }
 
-        [HttpGet("employees-detail /{guid})")]
+        [HttpGet("detail /{guid})")]
         public IActionResult GetAllEmployeeDetailByGuid(Guid guid)
         {
             var result = _employeeService.GetEmployeeDetailByGuid(guid);

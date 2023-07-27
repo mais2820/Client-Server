@@ -155,20 +155,20 @@ namespace API.Controllers
             });
         }
 
-        [HttpGet("booked-room")]
-        public IActionResult GetBookedRoom()
+        [HttpGet("booked-today")]
+        public IActionResult GetBookedRoomToday()
         {
-            var result = _roomService.GetRoom();
+            var result = _roomService.GetAllBookedRoomToday();
             if (result is null)
             {
-                return NotFound(new ResponseHandler<IEnumerable<BookedRoomDto>>
+                return NotFound(new ResponseHandler<IEnumerable<BookedRoomTodayDto>>
                 {
                     Code = StatusCodes.Status404NotFound,
                     Status = HttpStatusCode.NotFound.ToString(),
                     Message = "Data Not Found"
                 });               
             }
-            return Ok(new ResponseHandler<IEnumerable<BookedRoomDto>>
+            return Ok(new ResponseHandler<IEnumerable<BookedRoomTodayDto>>
             {
                 Code = StatusCodes.Status200OK,
                 Status = "OK",
