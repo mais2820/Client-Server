@@ -8,10 +8,14 @@ namespace API.Services
     public class EmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly IEducationRepository _educationRepository;
+        private readonly IUniversityRepository _universityRepository;
 
-        public EmployeeService(IEmployeeRepository employeeRepository)
+        public EmployeeService(IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository)
         {
             _employeeRepository = employeeRepository;
+            _educationRepository = educationRepository;
+            _universityRepository = universityRepository;
         }
 
         public IEnumerable<EmployeeDto> GetAll()
@@ -84,6 +88,70 @@ namespace API.Services
 
             return result ? 1 // Employee is deleted;
                 : 0; // Employee failed to delete;
+        }
+
+        public IEnumerable<EmployeeDetailDto> GetAllEmployeeDetail()
+        {
+            var employees = _employeeRepository.GetAll();
+
+            if (!employees.Any())
+            {
+                return Enumerable.Empty<EmployeeDetailDto>();
+            }
+
+            var employeeDetailDto = new List<EmployeeDetailDto>();
+
+            foreach (var emp in employees)
+            {
+                var education = _educationRepository.GetByGuid(emp.Guid);
+                var university = _universityRepository.GetByGuid(education.UniversityGuid);
+
+                EmployeeDetailDto employeeDetail = new EmployeeDetailDto
+                {
+                    EmployeeGuid = emp.Guid,
+                    NIK = emp.NIK,
+                    FullName = emp.FirstName + " " + emp.LastName,
+                    BirthDate = emp.BirthDate,
+                    Gender = emp.Gender,
+                    HiringDate = emp.HiringDate,
+                    Email = emp.Email,
+                    PhoneNumber = emp.PhoneNumber,
+                    Major = education.Major,
+                    Degree = education.Degree,
+                    GPA = education.Gpa,
+                    UniversityName = university.Name
+                };
+                employeeDetailDto.Add(employeeDetail);
+            };
+            return employeeDetailDto;
+        }
+
+        public EmployeeDetailDto? GetEmployeeDetailByGuid(Guid guid)
+        {
+            var employee = _employeeRepository.GetByGuid(guid);
+
+            if (employee == null)
+            {
+                return null;
+            }
+
+            var education = _educationRepository.GetByGuid(employee.Guid);
+            var university = _universityRepository.GetByGuid(education.UniversityGuid);
+
+            return new EmployeeDetailDto
+            {
+                EmployeeGuid = employee.Guid,
+                NIK = employee.NIK,
+                FullName = employee.FirstName + " " + employee.LastName,
+                Gender = employee.Gender,
+                HiringDate = employee.HiringDate,
+                Email = employee.Email,
+                PhoneNumber = employee.PhoneNumber,
+                Major = education.Major,
+                Degree = education.Degree,
+                GPA = education.Gpa,
+                UniversityName = university.Name
+            };
         }
     }
 }

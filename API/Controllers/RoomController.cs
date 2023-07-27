@@ -154,5 +154,27 @@ namespace API.Controllers
                 Message = "Delete Data Success"
             });
         }
+
+        [HttpGet("booked-room")]
+        public IActionResult GetBookedRoom()
+        {
+            var result = _roomService.GetRoom();
+            if (result is null)
+            {
+                return NotFound(new ResponseHandler<IEnumerable<BookedRoomDto>>
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data Not Found"
+                });               
+            }
+            return Ok(new ResponseHandler<IEnumerable<BookedRoomDto>>
+            {
+                Code = StatusCodes.Status200OK,
+                Status = "OK",
+                Message = "Success Retrieve Data",
+                Data = result
+            });
+        }
     }
 }
