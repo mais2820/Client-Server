@@ -13,7 +13,7 @@ namespace API.Utilities.Validation.Accounts
             _employeeRepository = employeeRepository;
 
             RuleFor(l => l.Email).NotEmpty().EmailAddress();
-            RuleFor(l => l.Password).NotEmpty().Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$\");
+            RuleFor(l => l.Password).NotEmpty().Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$");
         }
     }
 }

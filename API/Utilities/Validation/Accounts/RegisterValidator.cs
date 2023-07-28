@@ -26,23 +26,27 @@ namespace API.Utilities.Validation.Accounts
                 .NotEmpty().WithMessage("Email is required")
                 .EmailAddress().WithMessage("Email is not valid")
                 .Must(IsDuplicateValue).WithMessage("Email already exists"); ;
-            RuleFor(l => l.PhoneNumber).NotEmpty()
+            RuleFor(l => l.PhoneNumber).NotEmpty().MaximumLength(20).Matches(@"^\+[0-9]")
                 .Must(IsDuplicateValue).WithMessage("Phone Number already exists");
             RuleFor(l => l.Major)
                 .NotEmpty();
             RuleFor(l => l.Degree)
                 .NotEmpty();
             RuleFor(l => l.GPA)
-                .LessThanOrEqualTo(0)
-                .GreaterThanOrEqualTo(4)
+                .LessThanOrEqualTo(4)
+                .GreaterThanOrEqualTo(0)
                 .NotEmpty();
             RuleFor(l => l.UniversityCode)
                 .NotEmpty(); 
             RuleFor(l => l.UniversityName)
                 .NotEmpty();
             RuleFor(l => l.Password)
+                .NotEmpty().WithMessage("Password is required")
+                .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$");
+            RuleFor(l => l.ConfirmPassword)
                 .NotEmpty()
-                .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$\");
+                .Equal(l => l.Password)
+                .WithMessage("Password do not match");
         }
 
         private bool IsDuplicateValue(string value)

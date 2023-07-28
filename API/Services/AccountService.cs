@@ -27,24 +27,24 @@ namespace API.Services
             _dbContext = dbContext;
         }
 
-        public int Login(LoginDto loginDto)
+        public bool Login(LoginDto loginDto)
         {
             var getEmployee = _employeeRepository.GetByEmail(loginDto.Email);
 
             if (getEmployee is null)
             {
-                return 0; // Employee not found
+                return false; // Employee not found
             }
 
             var getAccount = _accountRepository.GetByGuid(getEmployee.Guid);
 
-            if (getAccount.Password == loginDto.Password)
+            if (getEmployee != null && HashingHandler.ValidateHash(loginDto.Password,getAccount.Password))
             {
-                return 1; // Login success
+                return true; // Login success
             }
 
-            return 0;
-        }
+            return false;
+        }       
 
         public int Register(RegisterDto registerDto)
         {
@@ -71,8 +71,7 @@ namespace API.Services
                     university = createUniversity;
                 }
 
-                var newNik = GenerateHandler.Nik(_employeeRepository
-                                           .GetLastNik()); //karena niknya generate, sebelumnya kalo ga dikasih ini niknya null jadi error
+                var newNik = GenerateHandler.Nik(_employeeRepository.GetLastNik()); //karena niknya generate, sebelumnya kalo ga dikasih ini niknya null jadi error
                 var employeeGuid = Guid.NewGuid(); // Generate GUID baru untuk employee
 
                 // Buat objek Employee dengan nilai GUID baru
@@ -99,12 +98,14 @@ namespace API.Services
                     UniversityGuid = university.Guid
                 });
 
+                var hashedPassword = HashingHandler.GenerateHash(registerDto.Password);
+
                 var account = _accountRepository.Create(new Account
                 {
                     Guid = employeeGuid, // Gunakan employeeGuid
                     Otp = 1,             //sementara ini dicoba gabisa diisi angka nol didepan, tadi masukin 098 error
                     IsUsed = true,
-                    Password = registerDto.Password
+                    Password = hashedPassword
                 });
                 transaction.Commit();
                 return 1;
@@ -131,10 +132,11 @@ namespace API.Services
 
             _accountRepository.Clear();
 
+            var hashedPassword = HashingHandler.GenerateHash(getAccountDetail.Password);
             var isUpdated = _accountRepository.Update(new Account
             {
                 Guid = getAccountDetail.Guid,
-                Password = getAccountDetail.Password,
+                Password = hashedPassword,
                 ExpiredTime = DateTime.Now.AddMinutes(5),
                 Otp = otp,
                 IsUsed = false,
@@ -161,7 +163,7 @@ namespace API.Services
             {
                 return 0;
             }
-
+            var hashedPassword = HashingHandler.GenerateHash(changePasswordDto.Password);
             var account = new Account
             {
                 Guid = getAccount.Guid,
@@ -170,7 +172,7 @@ namespace API.Services
                 CreatedDate = getAccount.CreatedDate,
                 Otp = getAccount.Otp,
                 ExpiredTime = getAccount.ExpiredTime,
-                Password = changePasswordDto.Password,
+                Password = hashedPassword,
             };
 
             if (getAccount.Otp != changePasswordDto.OTP)

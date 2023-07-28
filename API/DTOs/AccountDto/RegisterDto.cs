@@ -17,6 +17,7 @@ namespace API.DTOs.AccountDto
         public string UniversityCode { get; set; }
         public string UniversityName { get; set; }
         public string Password { get; set; }
+        public string ConfirmPassword { get; set; }
 
     }
 }
