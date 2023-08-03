@@ -4,6 +4,7 @@ using API.DTOs.UniversityDto;
 using API.Models;
 using API.Services;
 using API.Utilities.Handlers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -11,7 +12,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/accounts")]
-
+    [Authorize]
     public class AccountController : ControllerBase
     {
         private readonly AccountService _accountService;
@@ -22,11 +23,12 @@ namespace API.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public IActionResult Login(LoginDto loginDto)
         {
             var result = _accountService.Login(loginDto);
 
-            if (result is false)
+            if (result is "-1")
             {
                 return NotFound(new ResponseHandler<LoginDto>
                 {
@@ -36,15 +38,30 @@ namespace API.Controllers
                 });
             }
 
-            return Ok(new ResponseHandler<LoginDto>
+            if (result is "-2")
+            {
+                return StatusCode(500, new ResponseHandler<LoginDto>
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Error when generated token"
+                });
+            }
+
+            return Ok(new ResponseHandler<object>
             {
                 Code = StatusCodes.Status200OK,
                 Status = HttpStatusCode.OK.ToString(),
-                Message = "Login Success"
-            });
+                Message = "Login Success",
+                Data = new TokenDto
+                {
+                    Token = result
+                }
+            });;
         }
 
         [HttpPost("register")]
+        [AllowAnonymous]
         public IActionResult Register(RegisterDto registerDto)
         {
             var result = _accountService.Register(registerDto);
@@ -68,6 +85,7 @@ namespace API.Controllers
         }
 
         [HttpPost("forgot-password")]
+        [AllowAnonymous]
         public IActionResult ForgotPassword(ForgotPasswordDto forgotPasswordDto)
         {
             var isUpdated = _accountService.ForgotPassword(forgotPasswordDto);
@@ -99,6 +117,7 @@ namespace API.Controllers
         }
 
         [HttpPost("changepassword")]
+        [AllowAnonymous]
         public IActionResult UpdatePassword(ChangePasswordDto changePasswordDto)
         {
             var update = _accountService.ChangePassword(changePasswordDto);

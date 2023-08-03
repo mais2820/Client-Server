@@ -1,4 +1,5 @@
-﻿using API.Models;
+﻿using API.DTOs.RoleDto;
+using API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -20,6 +21,13 @@ namespace API.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Role>().HasData(
+                new NewRoleDefaultDto
+                {
+                    Guid = Guid.Parse("F17A197E-9D15-4E53-3CA0-08DB91A7355A"),
+                    Name = "Employee"
+                });
 
             modelBuilder.Entity<Employee>()
                 .HasIndex(e => new

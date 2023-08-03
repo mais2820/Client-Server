@@ -1,12 +1,15 @@
 ﻿using API.Contracts;
 using API.Data;
 using API.DTOs.AccountDto;
+using API.DTOs.AccountRoleDto;
 using API.DTOs.EducationDto;
 using API.DTOs.EmployeeDto;
 using API.DTOs.UniversityDto;
 using API.Models;
 using API.Repositories;
 using API.Utilities.Handlers;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace API.Services
 {
@@ -18,8 +21,10 @@ namespace API.Services
         private readonly IUniversityRepository _universityRepository;
         private readonly BookingDbContext _dbContext;
         private readonly IEmailHandler _emailHandler;
+        private readonly ITokenHandler _tokenHandler;
+        private readonly IAccountRoleRepository _accountRoleRepository;
 
-        public AccountService(IAccountRepository accountRepository, IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository, BookingDbContext dbContext, IEmailHandler emailHandler)
+        public AccountService(IAccountRepository accountRepository, IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository, BookingDbContext dbContext, IEmailHandler emailHandler, ITokenHandler tokenHandler, IAccountRoleRepository accountRoleRepository)
         {
             _accountRepository = accountRepository;
             _employeeRepository = employeeRepository;
@@ -27,25 +32,48 @@ namespace API.Services
             _universityRepository = universityRepository;
             _dbContext = dbContext;
             _emailHandler = emailHandler;
+            _tokenHandler = tokenHandler;
+            _accountRoleRepository = accountRoleRepository;
         }
 
-        public bool Login(LoginDto loginDto)
+        public string Login(LoginDto loginDto)
         {
             var getEmployee = _employeeRepository.GetByEmail(loginDto.Email);
+            
 
             if (getEmployee is null)
             {
-                return false; // Employee not found
+                return "-1"; // Employee not found
             }
 
             var getAccount = _accountRepository.GetByGuid(getEmployee.Guid);
 
-            if (getEmployee != null && HashingHandler.ValidateHash(loginDto.Password,getAccount.Password))
+            if (!HashingHandler.ValidateHash(loginDto.Password, getAccount.Password))
             {
-                return true; // Login success
+                return "-1"; // Login gagal
             }
 
-            return false;
+            var getRoles = _accountRoleRepository.GetRoleNamesByAccountGuid(getEmployee.Guid);
+
+            var claims = new List<Claim>
+            {
+                new Claim("Guid", getEmployee.Guid.ToString()),
+                new Claim("Fullname", $"{getEmployee.FirstName}{getEmployee.LastName}"),
+                new Claim("Email", getEmployee.Email)
+            };
+
+            foreach (var role in getRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var generatedToken = _tokenHandler.GenerateToken(claims);
+            if (generatedToken is null)
+            {
+                return "-2";
+            }
+            return generatedToken;
+          
         }       
 
         public int Register(RegisterDto registerDto)
@@ -107,7 +135,16 @@ namespace API.Services
                     Guid = employeeGuid, // Gunakan employeeGuid
                     Otp = 1,             //sementara ini dicoba gabisa diisi angka nol didepan, tadi masukin 098 error
                     IsUsed = true,
-                    Password = hashedPassword
+                    Password = hashedPassword,
+                    CreatedDate = DateTime.Now,
+                    ModifiedDate = DateTime.Now,
+                    ExpiredTime = DateTime.Now
+                });
+
+                var accountRole = _accountRoleRepository.Create(new NewAccountRoleDto
+                {
+                    AccountGuid = account.Guid,
+                    RoleGuid = Guid.Parse("F17A197E-9D15-4E53-3CA0-08DB91A7355A")
                 });
                 transaction.Commit();
                 return 1;
@@ -136,6 +173,8 @@ namespace API.Services
 
             var hashedPassword = HashingHandler.GenerateHash(getAccountDetail.Password);
             var isUpdated = _accountRepository.Update(new Account
+
+
             {
                 Guid = getAccountDetail.Guid,
                 Password = hashedPassword,
@@ -151,7 +190,7 @@ namespace API.Services
                 return -1; // error update
             }
 
-            _emailHandler.SendEmail(forgotPasswordDto.Email, "OTP", $"Your OTP id {otp}"); 
+            _emailHandler.SendEmail(forgotPasswordDto.Email, "OTP", $"Your OTP id : {otp}"); 
             return 1;
         }
 
