@@ -1,0 +1,85 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  /*position: relative;
+  min-height: 100%;*/
+  height:2000px;
+}
+
+body {
+  margin-bottom: 60px;
+  height:2000px;
+}
+
+/*.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;*/ /* Agar lebarnya mengisi seluruh lebar halaman */
+/*}
+
+.content {
+    padding-bottom: 100px;*/ /* Ukuran footer */
+/*}*/
+
+
+/*.container .row {
+    border: 2px solid green;
+}*/
+
+/*.table1 #no{
+    border: 2px solid green;
+}*/
+
+
+/*table {
+    width: 50%;
+}
+
+thead{
+    text-align:center;
+    background-color:cyan;
+}
+
+th, td {
+    border: 2px solid black;
+    padding: 8px;
+}
+
+tr td:first-child{
+    text-align:center;
+}*/
+
+/*.modal-dialog {
+    width: 40%;
+    height:40px;
+}
+
+.table {
+    width:70%;
+    margin: auto;
+}*/
+/*.table th, .table td, .table th{
+    text-align: center;
+}*/
+
+#title{
+    text-align:center;
+}
+
+.dt-buttons{
+    margin-bottom:15px;
+}
+
+/*#myTable{
+    position:relative;
+    margin-top:10px;
+}*/
+
